@@ -3,6 +3,14 @@
 # project structure:
 web-app-docker-k8s/
 ├── frontend/
+│   ├── index.html
+│   ├── styles.css
+│   └── Dockerfile
 ├── backend/
+│   ├── app.py
+│   ├── requirements.txt
+│   └── Dockerfile
 ├── deployment/
-├── README.md
+│   ├── frontend-deployment.yaml
+│   └── backend-deployment.yaml
+└── README.md
