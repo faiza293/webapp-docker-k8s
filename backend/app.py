@@ -1,45 +1,30 @@
-import logging
 from flask import Flask, request, jsonify
+from flask_sqlalchemy import SQLAlchemy
 import psycopg2
-from psycopg2.extras import RealDictCursor
 
 app = Flask(__name__)
+app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://faizauser:Fayiz@293@34.136.236.4/faizadb'
+db = SQLAlchemy(app)
 
-logging.basicConfig(level=logging.INFO)
-
-def get_db_connection():
-    logging.info('Attempting to connect to the database')
-    conn = psycopg2.connect(
-        host="34.136.236.4",
-        database="faizadb",
-        user="faizauser",
-        password="Fayiz@293"
-    )
-    logging.info('Connected to the database')
-    return conn
+class Data(db.Model):
+    __tablename__ = 'data'
+    id = db.Column(db.Integer, primary_key=True)
+    value1 = db.Column(db.String(50))
+    value2 = db.Column(db.String(50))
 
 @app.route('/submit', methods=['POST'])
 def submit():
-    try:
-        data = request.json
-        value1 = data.get('value1')
-        value2 = data.get('value2')
-        if value1 and value2:
-            conn = get_db_connection()
-            cursor = conn.cursor()
-            logging.info(f'Inserting data: {value1}, {value2}')
-            cursor.execute("INSERT INTO data (value1, value2) VALUES (%s, %s)", (value1, value2))
-            conn.commit()
-            cursor.close()
-            conn.close()
-            logging.info(f'Data inserted successfully: {value1}, {value2}')
-            return jsonify({'message': 'Data inserted successfully!'}), 200
-        else:
-            logging.error('Invalid data received')
-            return jsonify({'error': 'Invalid data!'}), 400
-    except Exception as e:
-        logging.error(f'Error: {str(e)}')
-        return jsonify({'error': 'Internal server error!'}), 500
+    data = request.get_json()
+    value1 = data['value1']
+    value2 = data['value2']
+    
+    new_data = Data(value1=value1, value2=value2)
+    db.session.add(new_data)
+    db.session.commit()
+    
+    return jsonify({'message': 'Data submitted successfully!'})
 
 if __name__ == '__main__':
+    # Create all database tables
+    db.create_all()
     app.run(host='0.0.0.0', port=5000)
