@@ -2,20 +2,20 @@ import logging
 from flask import Flask, request, jsonify
 import psycopg2
 from psycopg2.extras import RealDictCursor
-import os
 
 app = Flask(__name__)
 
 logging.basicConfig(level=logging.INFO)
 
-# Connect to the PostgreSQL database
 def get_db_connection():
+    logging.info('Attempting to connect to the database')
     conn = psycopg2.connect(
         host="34.136.236.4",
         database="faizadb",
         user="faizauser",
         password="Fayiz@293"
     )
+    logging.info('Connected to the database')
     return conn
 
 @app.route('/submit', methods=['POST'])
@@ -27,11 +27,12 @@ def submit():
         if value1 and value2:
             conn = get_db_connection()
             cursor = conn.cursor()
+            logging.info(f'Inserting data: {value1}, {value2}')
             cursor.execute("INSERT INTO data (value1, value2) VALUES (%s, %s)", (value1, value2))
             conn.commit()
             cursor.close()
             conn.close()
-            logging.info(f'Data inserted: {value1}, {value2}')
+            logging.info(f'Data inserted successfully: {value1}, {value2}')
             return jsonify({'message': 'Data inserted successfully!'}), 200
         else:
             logging.error('Invalid data received')
